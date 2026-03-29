@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Dragon's Magical Journey</title>
+    <!-- Child-friendly Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple: #9b59b6;
+            --pink: #ff9ff3;
+            --yellow: #f1c40f;
+            --green: #2ecc71;
+            --blue: #3498db;
+            --white: #ffffff;
+            --sky: #87ceeb;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Game Container */
+        #game-stage {
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            max-height: 800px;
+            background: var(--sky);
+            position: relative;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 8px solid var(--white);
+        }
+
+        /* Background Layers */
+        .scene-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            transition: background 0.8s ease;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* UI Overlay Layer */
+        .ui-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 45%;
+            background: var(--white);
+            z-index: 10;
+            border-top: 5px solid var(--yellow);
+            border-radius: 40px 40px 0 0;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Character/Object Visuals */
+        #visual-container {
+            font-size: 120px;
+            z-index: 5;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #dragon-hero {
+            position: absolute;
+            bottom: 40%;
+            left: 10%;
+            font-size: 60px;
+            z-index: 6;
+            transition: all 0.5s ease;
+        }
+
+        /* Typography */
+        h1 { font-family: 'Fredoka One', cursive; color: var(--purple); margin: 0; font-size: 1.5rem; }
+        h2 { font-size: 1rem; color: #7f8c8d; margin: 5px 0; }
+        .story-text { font-size: 1.1rem; color: #34495e; line-height: 1.3; margin: 10px 0; font-weight: bold; }
+        .question-box { font-size: 1.2rem; background: #f9f9f9; padding: 10px; border-radius: 15px; border: 2px dashed var(--blue); color: #2c3e50; }
+        .blank { color: var(--blue); text-decoration: underline; font-weight: 900; }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: var(--pink);
+            border: none;
+            padding: 15px;
+            border-radius: 20px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d645ad;
+            transition: all 0.1s;
+        }
+
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #d645ad; }
+        .btn.correct { background: var(--green); box-shadow: 0 6px 0 #27ae60; }
+        .btn.wrong { background: #e74c3c; box-shadow: 0 6px 0 #c0392b; animation: shake 0.4s; }
+
+        .big-btn { grid-column: span 2; background: var(--yellow); box-shadow: 0 6px 0 #d4ac0d; font-size: 1.5rem; }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-50px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .float-anim { animation: float 3s infinite ease-in-out; }
+        .jump-anim { animation: jump 0.5s ease; }
+
+        /* Progress Bar */
+        #progress-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 12px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            z-index: 20;
+        }
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--yellow);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 10px; height: 10px;
+            background: red;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-stage">
+        <div id="progress-container"><div id="progress-fill"></div></div>
+
+        <!-- Visual Scene -->
+        <div id="scene-bg" class="scene-bg" style="background: linear-gradient(#2c3e50, #000);">
+            <div id="visual-container" class="float-anim">✨</div>
+            <div id="dragon-hero" class="hidden">🐉</div>
+        </div>
+
+        <!-- Interface Area -->
+        <div class="ui-layer">
+            <div id="content-start">
+                <h1>Magical Adventure</h1>
+                <p class="story-text">A baby dragon wakes up and wants to find its family. Can you help it on its adventure?</p>
+                <div class="btn-group">
+                    <button class="btn big-btn" onclick="startGame()">Start Adventure! 🚀</button>
+                </div>
+            </div>
+
+            <div id="content-game" class="hidden">
+                <h2 id="chapter-label">Chapter 1</h2>
+                <p id="story-para" class="story-text">Story content...</p>
+                <div class="question-box">
+                    <span id="q-text">Fill in the blank:</span>
+                    <span class="blank" id="blank-space">____</span>
+                </div>
+                <div id="option-buttons" class="btn-group">
+                    <!-- Buttons will appear here via JS -->
+                </div>
+            </div>
+
+            <div id="content-final" class="hidden">
+                <h1>Hooray! 🎉</h1>
+                <p class="story-text">The baby dragon reached its family! You are a vocabulary wizard!</p>
+                <div class="btn-group">
+                    <button class="btn big-btn" onclick="location.reload()">Play Again 🔄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        const chapters = [
+            {
+                label: "Chapter 1: Forest Friend",
+                story: "The baby dragon enters a magical forest and sees a hopping friend.",
+                visual: "🐇",
+                bg: "linear-gradient(#a8e6cf, #dcedc1)",
+                question: "This animal hops around. It is a ",
+                options: ["Rabbit", "Dog"],
+                answer: "Rabbit",
+                feedback: "Hoppy! That’s correct!"
+            },
+            {
+                label: "Chapter 2: Forest Mystery",
+                story: "A creature watches silently from a tree branch.",
+                visual: "🦉",
+                bg: "linear-gradient(#2c3e50, #8e44ad)",
+                question: "This animal flies at night. It is an ",
+                options: ["Owl", "Cat"],
+                answer: "Owl",
+                feedback: "Whoo-hoo! Well done!"
+            },
+            {
+                label: "Chapter 3: Stream Surprise",
+                story: "By the sparkling stream, a green creature jumps near the water.",
+                visual: "🐸",
+                bg: "linear-gradient(#81ecec, #0984e3)",
+                question: "This animal is green and jumps. It is a ",
+                options: ["Frog", "Horse"],
+                answer: "Frog",
+                feedback: "Ribbit! Correct!"
+            },
+            {
+                label: "Chapter 4: Rainbow Gem",
+                story: "A magical gem shines on a rock.",
+                visual: "💎", // Blue gem
+                bg: "linear-gradient(#ff7675, #fab1a0)",
+                question: "What colour is this gem? It is ",
+                options: ["Blue", "Red"],
+                answer: "Blue",
+                feedback: "You found the colour!"
+            },
+            {
+                label: "Chapter 5: Potion Discovery",
+                story: "Inside the wizard’s workshop, a bubbling potion sits on a table.",
+                visual: "🧪", // Yellow potion
+                bg: "linear-gradient(#6c5ce7, #a29bfe)",
+                question: "The potion’s colour is ",
+                options: ["Yellow", "Blue"],
+                answer: "Yellow",
+                feedback: "Magic colour found!"
+            },
+            {
+                label: "Chapter 6: Castle Key",
+                story: "A golden key shines under sunlight.",
+                visual: "🔑",
+                bg: "linear-gradient(#ffeaa7, #fdcb6e)",
+                question: "This object opens doors. It is a ",
+                options: ["Key", "Wand"],
+                answer: "Key",
+                feedback: "You unlocked it!"
+            },
+            {
+                label: "Chapter 7: Enchanted Mushroom",
+                story: "In the enchanted forest, a glowing mushroom lights the path.",
+                visual: "🍄",
+                bg: "linear-gradient(#00b894, #55efc4)",
+                question: "This grows on the ground and glows. It is a ",
+                options: ["Mushroom", "Rock"],
+                answer: "Mushroom",
+                feedback: "Magical mushroom found!"
+            },
+            {
+                label: "Chapter 8: Snack Time",
+                story: "The baby dragon is hungry and finds a snack.",
+                visual: "🍎",
+                bg: "linear-gradient(#ff7675, #d63031)",
+                question: "This fruit is red and sweet. It is an ",
+                options: ["Apple", "Carrot"],
+                answer: "Apple",
+                feedback: "Yummy! Correct!"
+            },
+            {
+                label: "Chapter 9: Magical Transport",
+                story: "A carriage appears to carry the baby dragon closer to home.",
+                visual: "🎠",
+                bg: "linear-gradient(#dfe6e9, #b2bec3)",
+                question: "This object carries someone on wheels. It is a ",
+                options: ["Carriage", "Boat"],
+                answer: "Carriage",
+                feedback: "All aboard!"
+            },
+            {
+                label: "Chapter 10: New Friend",
+                story: "A baby unicorn prances beside the dragon for the final stretch.",
+                visual: "🦄",
+                bg: "linear-gradient(#fd79a8, #e84393)",
+                question: "This magical creature has a horn. It is a ",
+                options: ["Unicorn", "Fairy"],
+                answer: "Unicorn",
+                feedback: "Magical friend found!"
+            }
+        ];
+
+        // --- GAME LOGIC ---
+        let currentChapter = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Sound Synthesis (No MP3s needed)
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.3); // C6
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            }
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function startGame() {
+            document.getElementById('content-start').classList.add('hidden');
+            document.getElementById('content-game').classList.remove('hidden');
+            document.getElementById('dragon-hero').classList.remove('hidden');
+            loadChapter();
+        }
+
+        function loadChapter() {
+            const data = chapters[currentChapter];
+            
+            // Update UI Texts
+            document.getElementById('chapter-label').innerText = data.label;
+            document.getElementById('story-para').innerText = data.story;
+            document.getElementById('q-text').innerText = data.question;
+            document.getElementById('blank-space').innerText = "____";
+            document.getElementById('blank-space').style.color = "var(--blue)";
+            
+            // Update Visuals
+            document.getElementById('visual-container').innerText = data.visual;
+            document.getElementById('scene-bg').style.background = data.bg;
+            document.getElementById('progress-fill').style.width = (currentChapter / chapters.length) * 100 + "%";
+
+            // Generate Buttons
+            const btnContainer = document.getElementById('option-buttons');
+            btnContainer.innerHTML = '';
+            
+            data.options.sort(() => Math.random() - 0.5).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, btn) {
+            const data = chapters[currentChapter];
+            const dragon = document.getElementById('dragon-hero');
+            const visual = document.getElementById('visual-container');
+
+            if (selected === data.answer) {
+                // Correct
+                playSound('correct');
+                btn.classList.add('correct');
+                document.getElementById('blank-space').innerText = selected;
+                document.getElementById('blank-space').style.color = "var(--green)";
+                
+                // Disable all buttons
+                const buttons = document.querySelectorAll('.btn');
+                buttons.forEach(b => b.style.pointerEvents = 'none');
+
+                // Animations
+                dragon.classList.add('jump-anim');
+                visual.style.transform = "scale(1.5) rotate(15deg)";
+                
+                setTimeout(() => {
+                    dragon.classList.remove('jump-anim');
+                    visual.style.transform = "scale(1) rotate(0)";
+                    nextChapter();
+                }, 1500);
+            } else {
+                // Wrong
+                playSound('wrong');
+                btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 500);
+            }
+        }
+
+        function nextChapter() {
+            currentChapter++;
+            if (currentChapter < chapters.length) {
+                loadChapter();
+            } else {
+                showFinal();
+            }
+        }
+
+        function showFinal() {
+            document.getElementById('progress-fill').style.width = "100%";
+            document.getElementById('content-game').classList.add('hidden');
+            document.getElementById('content-final').classList.remove('hidden');
+            document.getElementById('scene-bg').style.background = "linear-gradient(#f1c40f, #e67e22)";
+            document.getElementById('visual-container').innerText = "🏰";
+            document.getElementById('dragon-hero').style.left = "40%";
+            document.getElementById('dragon-hero').style.fontSize = "100px";
+            createConfetti();
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + "vw";
+                c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                c.style.top = "-20px";
+                document.body.appendChild(c);
+
+                const anim = c.animate([
+                    { transform: 'translateY(0) rotate(0)' },
+                    { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)` }
+                ], {
+                    duration: 2000 + Math.random() * 3000,
+                    iterations: Infinity
+                });
+            }
+        }
+    </script>
+</body>
+</html>
